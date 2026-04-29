@@ -1,0 +1,28 @@
+# Termux and proot directories
+/var/lib/proot-distro/
+/.termux-superproot/
+/profiles/debian.sh
+/profiles/kali.sh
+/profiles/ubuntu.sh
+/profiles/alpine.sh
+/profiles/archlinux.sh
+/profiles/fedora.sh
+
+# User configuration files
+~/.solve_problrm.conf
+~/.solve_problrm.log
+~/.termux-superproot/logs/
+
+# OS and IDE files
+.DS_Store
+.vscode/
+*.swp
+*.swo
+*~
+.idea/
+*.iml
+
+# Temporary files
+*.tmp
+*.bak
+*.backup

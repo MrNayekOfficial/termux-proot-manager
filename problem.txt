@@ -1,0 +1,218 @@
+Common problems when running Linux in an Android terminal
+
+1. Signal 9 / SIGKILL session kills
+Problem:
+- Android may kill Termux or the proot session in the background.
+- OEM battery optimization can stop the session unexpectedly.
+- Low RAM or heavy desktop environments can trigger process kills.
+- Long startup commands can time out or get killed during launch.
+
+Solution:
+- Disable battery optimization for Termux and any GUI companion app.
+- Use `termux-wake-lock` before starting the session.
+- Prefer lightweight desktops such as XFCE.
+- Use the generated launcher or `recover` instead of a long manual launch line.
+- Lower `GUI_GEOMETRY` and `GUI_DEPTH` in the config file if memory is tight.
+
+2. Audio problems
+Problem:
+- Sound may not pass through by default.
+- PulseAudio or other audio bridges may not be available.
+- Some devices block microphone or speaker access from apps running in Termux.
+- Bluetooth audio routing may fail or behave inconsistently.
+
+Solution:
+- Run `bash solve_problrm.sh audio-fix <distro>` to install audio packages inside the distro.
+- Start PulseAudio support from the script or inside the session.
+- Use the Android audio route supported by your Termux setup.
+- If Bluetooth audio is unstable, fall back to the device speaker or wired audio.
+
+3. Wi-Fi and network limitations
+Problem:
+- A proot Linux container cannot control the Android Wi-Fi driver directly.
+- Network tools may work, but low-level Wi-Fi management often does not.
+- Captive portals, DNS, and VPN apps on Android can interfere with Linux networking.
+- Some network services need root or special Android permissions.
+
+Solution:
+- Use Linux tools only for user-space networking tasks.
+- Let Android handle the real Wi-Fi connection and tethering.
+- Disable or adjust VPN and DNS apps when testing network access.
+- Use root or device-specific methods if you need driver-level Wi-Fi control.
+
+4. Bluetooth problems
+Problem:
+- Bluetooth hardware access is controlled by Android, not the Linux container.
+- Pairing, scanning, and device access can fail inside proot.
+- HCI-level tools often do not work without root and device-specific support.
+
+Solution:
+- Treat Bluetooth in proot as limited and best-effort only.
+- Use Android's Bluetooth stack for pairing and headset routing.
+- If you need hardware-level tools, use a rooted device with device-specific support.
+
+5. Hardware acceleration problems
+Problem:
+- GPU acceleration may be unavailable or incomplete.
+- Mesa, OpenGL, Vulkan, and X11 paths may not match the device driver stack.
+- Termux:X11 may run, but 3D performance can still be poor.
+- Heavy desktops may become slow, laggy, or crash.
+
+Solution:
+- Use a lightweight desktop and a lower resolution.
+- Prefer software rendering when the device stack is unstable.
+- Keep expectations realistic: rootless proot cannot guarantee native GPU acceleration.
+- Test one graphics path at a time: X11 first, VNC second.
+
+6. GUI startup problems
+Problem:
+- X11 may not start on display :0.
+- VNC servers may not be installed in the distro.
+- The desktop may start but show a blank screen or black window.
+- Wrong environment variables can break GUI launchers.
+
+Solution:
+- Use `bash solve_problrm.sh fix gui` or the script's `start` / `recover` path.
+- Install the GUI stack inside the distro with `gui <distro>` or `audio-fix <distro>` first.
+- If X11 fails, use the VNC fallback.
+- Keep `DISPLAY`, `PULSE_SERVER`, and session variables consistent with the launcher.
+
+7. Package installation problems
+Problem:
+- proot-distro images may fail to download.
+- Package mirrors can be slow or down.
+- apt, pacman, dnf, or apk may report dependency errors.
+- Partial installs can leave the container in a broken state.
+
+Solution:
+- Retry with a stable network connection.
+- Refresh package lists inside the distro before installing.
+- If the install is partial, repair the distro packages before starting the desktop.
+- Use the solver script's config and recovery flow to repeat the setup cleanly.
+
+8. Storage and filesystem problems
+Problem:
+- Not enough internal storage for Linux packages.
+- tmp folders can fill up and break launches.
+- SD card storage is often too slow or restricted for Linux use.
+- File permissions can behave differently between Android and Linux.
+
+Solution:
+- Keep enough free storage before installing a distro.
+- Clean tmp folders after failed launches.
+- Prefer internal storage over SD card for performance and reliability.
+- Use the script's cleanup flow when stale sockets or tmp files remain.
+
+9. Performance problems
+Problem:
+- Startup can be slow on low-end phones.
+- Large desktops can use too much RAM and CPU.
+- Background Android apps compete for resources.
+- Battery saver mode can make Linux sessions sluggish.
+
+Solution:
+- Use a lighter desktop and fewer background services.
+- Close other Android apps before starting Linux.
+- Reduce screen geometry and color depth.
+- Do not expect a full laptop-class session on a low-end phone.
+
+10. Keyboard and input problems
+Problem:
+- Some keyboards send different key combinations than expected.
+- Mouse gestures and touch input may not map cleanly to Linux apps.
+- Special keys like Ctrl, Alt, Esc, and function keys can be awkward.
+
+Solution:
+- Use an external keyboard when possible.
+- Pick a desktop environment with simple key mappings.
+- Keep a virtual mouse and keyboard app ready for GUI sessions.
+
+11. Termux environment problems
+Problem:
+- Termux installed from the wrong source can break package access.
+- Missing Termux API or X11 packages can block features.
+- Old Termux versions may not support current repositories.
+- Permissions for storage, notifications, or battery optimization may be missing.
+
+Solution:
+- Install Termux from a current trusted source.
+- Install required packages and companion apps before launching Linux.
+- Grant storage and related permissions in Android settings.
+- Keep Termux updated and avoid mixing old repositories with current scripts.
+
+12. Rootless limitations
+Problem:
+- A proot distro cannot load real kernel modules.
+- It cannot replace Android drivers.
+- It cannot access all device hardware like a native Linux install.
+- Some advanced admin tasks are impossible without root.
+
+Solution:
+- Use rootless Linux for user-space tools, not for kernel-level device control.
+- If you need real drivers or kernel modules, use a rooted or native Linux setup.
+- Separate what Linux can do in user space from what Android owns below it.
+
+13. Security and stability problems
+Problem:
+- Misconfigured scripts can restart loops or fail silently.
+- Background services may keep running after a session closes.
+- Aggressive kill scripts can stop useful processes by mistake.
+- Logging can grow if cleanup is not handled.
+
+Solution:
+- Keep a single entrypoint and use the generated wrappers.
+- Stop services cleanly before forcing a new session.
+- Review log output when a session fails.
+- Avoid editing multiple launch paths in different places.
+
+14. Device-specific problems
+Problem:
+- Different Android brands handle background processes differently.
+- Some phones block Termux harder than others.
+- One device may support X11 or audio while another does not.
+- A setup that works on one Android version may fail on another.
+
+Solution:
+- Test on the actual target device, not only on one phone.
+- Expect vendor differences in battery, memory, and graphics behavior.
+- Keep settings conservative so the setup is portable.
+
+15. User experience problems
+Problem:
+- Commands can be long and confusing for new users.
+- Errors may look like Linux problems when they are really Android limits.
+- Multiple launch methods can confuse which one is active.
+- Users may expect full desktop Linux behavior from a rootless container.
+
+Solution:
+- Use the wrapper scripts and the README as the canonical flow.
+- Prefer one launch path per distro.
+- Keep the recovery commands short and predictable.
+- Set expectations clearly: this is a rootless container, not a full native install.
+
+16. Recovery problems
+Problem:
+- After a crash, stale sockets or background processes may remain.
+- Manual cleanup may be needed before a new session works.
+- Restarting too quickly can repeat the same error.
+- Some failures require reinstalling the distro.
+
+Solution:
+- Use `bash solve_problrm.sh recover` for a clean reconnect and remediation flow.
+- Use `bash termux-superproot.sh stop` when a session is stuck.
+- Clean temp files when sockets or stale locks remain.
+- Reinstall the distro only if package repair fails.
+
+17. Things that can happen even when everything is configured correctly
+Problem:
+- Random session termination because Android reclaimed memory.
+- Audio works in one app but not another.
+- VNC works but is too slow.
+- X11 starts but graphics are unstable.
+- A distro package update introduces a new error.
+
+Solution:
+- Keep the session lightweight and monitor memory use.
+- Treat audio and graphics paths as device-dependent.
+- Test updates one at a time.
+- If the issue is device-level, reduce the desktop footprint or switch to a different rendering path.

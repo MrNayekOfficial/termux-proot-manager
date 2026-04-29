@@ -1,6 +1,6 @@
 # Contributing to Termux proot Manager
 
-Thank you for your interest in contributing! We welcome bug reports, feature requests, and pull requests.
+This project is maintained by MrNayekOfficial. If you find bugs or want to suggest improvements, I'd love your feedback!
 
 ## How to Contribute
 
@@ -29,11 +29,11 @@ Thank you for your interest in contributing! We welcome bug reports, feature req
 #### Development Setup
 
 ```bash
-# Clone your fork
-git clone https://github.com/YOUR_USERNAME/termux-proot-manager.git
+# Clone the main repository
+git clone https://github.com/MrNayekOfficial/termux-proot-manager.git
 cd termux-proot-manager
 
-# Create a branch
+# Create a branch for your changes
 git checkout -b feature/your-feature-name
 ```
 
@@ -89,13 +89,14 @@ bash solve_problrm.sh auto
 
 #### Commit Messages
 
-Use clear, descriptive commit messages:
+Use clear, descriptive commit messages that describe what you changed and why:
 
 ```
 feat: Add phantom process control
 fix: Correct pkill signal syntax
 docs: Update README with new features
 refactor: Simplify device snapshot collection
+chore: Update dependencies
 ```
 
 Format: `<type>: <subject>`
@@ -133,4 +134,6 @@ By contributing, you agree that your code will be licensed under the MIT License
 
 ---
 
-Thank you for making Termux proot Manager better! 🎉
+**Built with genuine hard work and hands-on experience running Linux distros in Termux.** Every feature, fix, and line of code comes from real problem-solving on actual Android devices. No shortcuts, no templates—just authentic engineering.
+
+Thank you for supporting this project! 🎉

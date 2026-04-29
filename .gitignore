@@ -1,23 +1,25 @@
-# Termux and proot directories
-/var/lib/proot-distro/
-/.termux-superproot/
-/profiles/debian.sh
-/profiles/kali.sh
-/profiles/ubuntu.sh
-/profiles/alpine.sh
-/profiles/archlinux.sh
-/profiles/fedora.sh
+# Generated launcher directories (created at runtime)
+.bin/
+.config/
+.logs/
 
-# User configuration files
-~/.solve_problrm.conf
-~/.solve_problrm.log
-~/.termux-superproot/logs/
+# User runtime files (created on device)
+.solve_problrm.conf
+.solve_problrm.log
+.termux-superproot/
 
-# OS and IDE files
+# OS and editor files
 .DS_Store
 .vscode/
 *.swp
 *.swo
+*~
+.idea/
+*.iml
+
+# Build and temp files
+*.bak
+*.tmp
 *~
 .idea/
 *.iml

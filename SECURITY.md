@@ -4,7 +4,7 @@
 
 **Do not** open public GitHub issues for security vulnerabilities.
 
-Instead, please email security concerns to the maintainers or use GitHub's Security Advisory feature.
+Instead, please reach out directly to MrNayekOfficial via GitHub or use GitHub's Security Advisory feature.
 
 ### What to Include
 

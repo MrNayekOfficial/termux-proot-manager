@@ -1,16 +1,18 @@
 # Termux proot Manager
 
-**Single-line download for the essential scripts and profiles:**
+I built this repo for people who want a direct Termux setup without chasing scattered commands. It keeps the Linux setup, recovery steps, and common fixes in one place.
+
+## One-line download
+
+Use this if you want the essential scripts and profile launchers in one go:
 
 ```bash
 mkdir -p termux-proot-manager && cd termux-proot-manager && for file in termux-superproot.sh solve_problrm.sh profiles/launch.sh profiles/debian.sh profiles/kali.sh profiles/ubuntu.sh profiles/alpine.sh profiles/archlinux.sh profiles/fedora.sh; do curl -fsSL -o "$file" "https://raw.githubusercontent.com/MrNayekOfficial/termux-proot-manager/main/$file" || exit 1; done && chmod +x termux-superproot.sh solve_problrm.sh profiles/*.sh
 ```
 
-This project gives visitors a simple way to download the scripts and run them in Termux.
+If you prefer to clone the whole repo, use the quick start below.
 
-## Visitor Quick Start
-
-### Option 1: Clone from GitHub
+## Quick Start
 
 ```bash
 pkg update -y
@@ -24,7 +26,7 @@ bash termux-superproot.sh install debian
 bash termux-superproot.sh start debian
 ```
 
-### Option 2: Download the script directly
+If you already have the scripts locally, you can also download them directly:
 
 ```bash
 pkg update -y
@@ -34,23 +36,10 @@ curl -fsSL -o termux-superproot.sh https://raw.githubusercontent.com/MrNayekOffi
 curl -fsSL -o solve_problrm.sh https://raw.githubusercontent.com/MrNayekOfficial/termux-proot-manager/main/solve_problrm.sh
 
 chmod +x termux-superproot.sh solve_problrm.sh
-
 bash termux-superproot.sh init
 ```
 
-### Option 3: Download with wget
-
-```bash
-pkg update -y
-pkg install -y wget bash
-
-wget -O termux-superproot.sh https://raw.githubusercontent.com/MrNayekOfficial/termux-proot-manager/main/termux-superproot.sh
-wget -O solve_problrm.sh https://raw.githubusercontent.com/MrNayekOfficial/termux-proot-manager/main/solve_problrm.sh
-
-chmod +x termux-superproot.sh solve_problrm.sh
-```
-
-This project contains three main components:
+## What’s in this repo
 
 1. **`termux-superproot.sh`** - Linux distro manager for Termux
    - Install and manage 6+ proot-based Linux distributions
@@ -73,43 +62,23 @@ This project contains three main components:
    - GUI and display failures
    - And many more...
 
-## Quick Start
+## Everyday usage
 
 ```bash
-# Initialize (installs all packages)
+# Install or refresh dependencies
 bash termux-superproot.sh init
 
-# Install Debian
+# Install and start a distro
 bash termux-superproot.sh install debian
-
-# Start with GUI
 bash termux-superproot.sh start debian
 
-# Or fix problems:
+# Repair Android/ADB issues
+bash solve_problrm.sh config
 bash solve_problrm.sh auto
+
+# See supported distro names
+bash termux-superproot.sh list
 ```
-
-## How Visitors Use It
-
-Visitors usually do one of these:
-
-```bash
-# Clone the repo and run the manager
-git clone https://github.com/MrNayekOfficial/termux-proot-manager.git
-cd termux-proot-manager
-bash termux-superproot.sh init
-
-# Or download the scripts directly without git
-curl -fsSL -o termux-superproot.sh https://raw.githubusercontent.com/MrNayekOfficial/termux-proot-manager/main/termux-superproot.sh
-chmod +x termux-superproot.sh
-bash termux-superproot.sh start debian
-```
-
-## Full Documentation
-
-- `problem.txt` - Problem/solution reference
-- `CONTRIBUTING.md` - How to contribute
-- `CHANGELOG.md` - Version history
 
 ## Quick Workflows
 
@@ -142,25 +111,16 @@ bash termux-superproot.sh start debian
 - **proot-distro** (installed by init)
 - **ADB** (for device fixes, optional)
 
-## Useful Commands
+## More details
 
-```bash
-# Show supported distros
-bash termux-superproot.sh list
-
-# Install and start Debian
-bash termux-superproot.sh install debian
-bash termux-superproot.sh start debian
-
-# Repair Android/ADB issues
-bash solve_problrm.sh config
-bash solve_problrm.sh auto
-```
+- `problem.txt` - Problem/solution reference
+- `CONTRIBUTING.md` - How to contribute
+- `CHANGELOG.md` - Version history
 
 ## Status
 
-✅ **Production Ready** - Fully tested and bug-free
+The repo is kept lightweight on purpose. The scripts are meant to be copied, run, and adjusted for your device.
 
 ---
 
-**→ Use the commands above to get started in Termux**
+**→ Start with the one-line download or the quick start block above**

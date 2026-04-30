@@ -113,6 +113,7 @@ bash termux-superproot.sh start debian
 
 ## More details
 
+- `docs/USAGE.md` - Step-by-step usage guide
 - `problem.txt` - Problem/solution reference
 - `CONTRIBUTING.md` - How to contribute
 - `CHANGELOG.md` - Version history

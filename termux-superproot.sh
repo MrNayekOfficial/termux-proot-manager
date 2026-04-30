@@ -20,9 +20,9 @@ MEMORY_WARN_MB="${MEMORY_WARN_MB:-700}"
 log() {
   local msg
   msg=$(printf '[%s] %s\n' "$(date +'%H:%M:%S')" "$*")
-  printf '%s' "$msg"
+  printf '%s\n' "$msg"
   mkdir -p "$LOG_DIR" 2>/dev/null || true
-  printf '%s' "$msg" >> "$LOG_DIR/termux-superproot.log" 2>/dev/null || true
+  printf '%s\n' "$msg" >> "$LOG_DIR/termux-superproot.log" 2>/dev/null || true
 }
 
 warn() {
@@ -122,6 +122,86 @@ Supported proot-distro names:
   kali
   ubuntu
 EOF
+}
+
+is_supported_distro() {
+  local distro="${1:-}"
+  case "$distro" in
+    alpine|archlinux|debian|fedora|kali|ubuntu)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+prompt_distro() {
+  local input
+  printf 'Enter distro (alpine/archlinux/debian/fedora/kali/ubuntu) [default: %s]: ' "$DEFAULT_DISTRO"
+  IFS= read -r input || true
+  input="${input:-$DEFAULT_DISTRO}"
+
+  if ! is_supported_distro "$input"; then
+    die "Unsupported distro: $input"
+  fi
+
+  printf '%s\n' "$input"
+}
+
+interactive_menu() {
+  local choice
+  local distro
+
+  cat <<EOF
+
+$APP_NAME interactive menu
+1) Init dependencies (pkg/proot setup)
+2) Install Linux distro
+3) Start Linux distro session
+4) Install + Start distro
+5) Show supported distros
+6) Exit
+EOF
+
+  printf 'Choose an option [1-6]: '
+  IFS= read -r choice || true
+
+  case "${choice:-1}" in
+    1)
+      install_base_packages
+      create_all_launchers
+      refresh_profile_launchers
+      ;;
+    2)
+      distro="$(prompt_distro)"
+      install_base_packages
+      install_distro "$distro"
+      create_launcher "$distro"
+      refresh_profile_launchers
+      ;;
+    3)
+      distro="$(prompt_distro)"
+      start_full_session "$distro"
+      ;;
+    4)
+      distro="$(prompt_distro)"
+      install_base_packages
+      install_distro "$distro"
+      create_launcher "$distro"
+      refresh_profile_launchers
+      start_full_session "$distro"
+      ;;
+    5)
+      show_supported_distros
+      ;;
+    6)
+      log "Exiting."
+      ;;
+    *)
+      die "Invalid menu option: $choice"
+      ;;
+  esac
 }
 
 install_distro() {
@@ -328,7 +408,7 @@ stop_related_processes() {
     local sig="$1"
     local pat="$2"
     if command -v pkill >/dev/null 2>&1; then
-      pkill -s "$sig" -f "$pat" >/dev/null 2>&1 || true
+      pkill -"$sig" -f "$pat" >/dev/null 2>&1 || true
       return
     fi
     # fallback: find pids with ps and kill
@@ -513,6 +593,8 @@ usage() {
 $APP_NAME
 
 Usage:
+  bash $(basename "$0")
+  bash $(basename "$0") menu
   bash $(basename "$0") init
   bash $(basename "$0") install <distro>
   bash $(basename "$0") nethunter
@@ -528,6 +610,7 @@ Usage:
   bash $(basename "$0") list
 
 Commands:
+  menu      Open an interactive menu to initialize, install, and start distros
   init      Install Termux packages, create directories, and generate launchers
   install   Install a proot distro by name
   nethunter Install Kali NetHunter Rootless using the official installer
@@ -544,6 +627,8 @@ Commands:
   list      Show supported distro names
 
 Examples:
+  bash $(basename "$0")
+  bash $(basename "$0") menu
   bash $(basename "$0") init
   bash $(basename "$0") install debian
   bash $(basename "$0") gui kali
@@ -562,10 +647,18 @@ main() {
   ensure_dirs
   ensure_profile_dir
 
-  local command="${1:-init}"
+  if [[ $# -eq 0 ]]; then
+    interactive_menu
+    return
+  fi
+
+  local command="${1:-menu}"
   shift || true
 
   case "$command" in
+    menu)
+      interactive_menu
+      ;;
     init)
       install_base_packages
       create_all_launchers

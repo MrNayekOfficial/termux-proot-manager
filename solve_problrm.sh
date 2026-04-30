@@ -10,8 +10,8 @@ MAX_RETRIES="${MAX_RETRIES:-3}"
 log() {
   local message
   message=$(printf '[%s] %s\n' "$(date +'%H:%M:%S')" "$*")
-  printf '%s' "$message"
-  printf '%s' "$message" >>"$LOG_FILE" 2>/dev/null || true
+  printf '%s\n' "$message"
+  printf '%s\n' "$message" >>"$LOG_FILE" 2>/dev/null || true
 }
 
 warn() {
@@ -75,14 +75,16 @@ append_snapshot() {
 collect_device_snapshot() {
   require_adb
   load_config
+  local serial
+  serial="$(ensure_connected_device)"
 
   log "Collecting device snapshot"
   append_snapshot "adb devices -l" adb devices -l
-  append_snapshot "adb shell getprop ro.product.model" adb shell getprop ro.product.model
-  append_snapshot "adb shell getprop ro.build.version.release" adb shell getprop ro.build.version.release
-  append_snapshot "adb shell getprop ro.product.manufacturer" adb shell getprop ro.product.manufacturer
-  append_snapshot "adb shell dumpsys battery" adb shell dumpsys battery
-  append_snapshot "adb shell dumpsys activity processes" adb shell dumpsys activity processes
+  append_snapshot "adb -s $serial shell getprop ro.product.model" adb -s "$serial" shell getprop ro.product.model
+  append_snapshot "adb -s $serial shell getprop ro.build.version.release" adb -s "$serial" shell getprop ro.build.version.release
+  append_snapshot "adb -s $serial shell getprop ro.product.manufacturer" adb -s "$serial" shell getprop ro.product.manufacturer
+  append_snapshot "adb -s $serial shell dumpsys battery" adb -s "$serial" shell dumpsys battery
+  append_snapshot "adb -s $serial shell dumpsys activity processes" adb -s "$serial" shell dumpsys activity processes
 }
 
 check_device_compatibility() {
@@ -163,6 +165,31 @@ require_adb() {
   fi
 }
 
+connected_device_serial() {
+  adb devices | awk 'NR>1 && $2=="device" {print $1; exit}'
+}
+
+ensure_connected_device() {
+  require_adb
+  load_config
+
+  adb start-server >/dev/null 2>&1 || true
+
+  local serial
+  local connect_target
+  serial="$(connected_device_serial)"
+
+  if [[ -z "$serial" && -n "${ADB_HOST:-}" && -n "${ADB_CONNECT_PORT:-}" ]]; then
+    connect_target="$(normalize_host_port "${ADB_HOST}:${ADB_CONNECT_PORT}")"
+    log "No active ADB device found. Trying adb connect $connect_target"
+    adb connect "$connect_target" 2>&1 | tee -a "$LOG_FILE" 2>/dev/null || true
+    serial="$(connected_device_serial)"
+  fi
+
+  [[ -n "$serial" ]] || die "No ADB device connected. Run 'bash $(basename "$0") pair' or 'bash $(basename "$0") connect' first."
+  printf '%s\n' "$serial"
+}
+
 normalize_host_port() {
   local input="$1"
   if [[ "$input" =~ ^[0-9.]+:[0-9]+$ ]]; then
@@ -213,45 +240,50 @@ connect_wireless_debugging() {
 
   log "Connecting to $connect_target"
   adb connect "$connect_target" 2>&1 | tee -a "$LOG_FILE" 2>/dev/null || true
+  save_config
 }
 
 run_fix_profile() {
   require_adb
+  load_config
 
   local target="${1:-all}"
+  local serial
+  serial="$(ensure_connected_device)"
+  log "Using ADB device: $serial"
   log "Running remediation profile: $target"
 
   case "$target" in
     all)
-      adb shell settings put global stay_on_while_plugged_in 3 || true
-      adb shell cmd deviceidle whitelist +com.termux || true
-      adb shell settings put global max_phantom_processes 2147483647 || true
-      adb shell settings put global enable_monitor_phantom_procs false || true
-      adb shell pm grant com.termux android.permission.READ_EXTERNAL_STORAGE || true
-      adb shell pm grant com.termux android.permission.WRITE_EXTERNAL_STORAGE || true
-      adb shell settings put global window_animation_scale 0.5 || true
-      adb shell settings put global transition_animation_scale 0.5 || true
-      adb shell settings put global animator_duration_scale 0.5 || true
-      adb shell input keyevent 224 || true
+      adb -s "$serial" shell settings put global stay_on_while_plugged_in 3 || true
+      adb -s "$serial" shell cmd deviceidle whitelist +com.termux || true
+      adb -s "$serial" shell settings put global max_phantom_processes 2147483647 || true
+      adb -s "$serial" shell settings put global enable_monitor_phantom_procs false || true
+      adb -s "$serial" shell pm grant com.termux android.permission.READ_EXTERNAL_STORAGE || true
+      adb -s "$serial" shell pm grant com.termux android.permission.WRITE_EXTERNAL_STORAGE || true
+      adb -s "$serial" shell settings put global window_animation_scale 0.5 || true
+      adb -s "$serial" shell settings put global transition_animation_scale 0.5 || true
+      adb -s "$serial" shell settings put global animator_duration_scale 0.5 || true
+      adb -s "$serial" shell input keyevent 224 || true
       ;;
     audio)
-      adb shell settings put global stay_on_while_plugged_in 3 || true
-      adb shell cmd deviceidle whitelist +com.termux || true
-      adb shell am broadcast -a android.intent.action.HEADSET_PLUG >/dev/null 2>&1 || true
+      adb -s "$serial" shell settings put global stay_on_while_plugged_in 3 || true
+      adb -s "$serial" shell cmd deviceidle whitelist +com.termux || true
+      adb -s "$serial" shell am broadcast -a android.intent.action.HEADSET_PLUG >/dev/null 2>&1 || true
       ;;
     signal9)
-      adb shell settings put global stay_on_while_plugged_in 3 || true
-      adb shell cmd deviceidle whitelist +com.termux || true
-      adb shell settings put global max_phantom_processes 2147483647 || true
-      adb shell settings put global enable_monitor_phantom_procs false || true
-      adb shell settings put global window_animation_scale 0.5 || true
-      adb shell settings put global transition_animation_scale 0.5 || true
-      adb shell settings put global animator_duration_scale 0.5 || true
+      adb -s "$serial" shell settings put global stay_on_while_plugged_in 3 || true
+      adb -s "$serial" shell cmd deviceidle whitelist +com.termux || true
+      adb -s "$serial" shell settings put global max_phantom_processes 2147483647 || true
+      adb -s "$serial" shell settings put global enable_monitor_phantom_procs false || true
+      adb -s "$serial" shell settings put global window_animation_scale 0.5 || true
+      adb -s "$serial" shell settings put global transition_animation_scale 0.5 || true
+      adb -s "$serial" shell settings put global animator_duration_scale 0.5 || true
       ;;
     gui)
-      adb shell settings put global window_animation_scale 0.5 || true
-      adb shell settings put global transition_animation_scale 0.5 || true
-      adb shell settings put global animator_duration_scale 0.5 || true
+      adb -s "$serial" shell settings put global window_animation_scale 0.5 || true
+      adb -s "$serial" shell settings put global transition_animation_scale 0.5 || true
+      adb -s "$serial" shell settings put global animator_duration_scale 0.5 || true
       ;;
     *)
       die "Unknown fix profile: $target"

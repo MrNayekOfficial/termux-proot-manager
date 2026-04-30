@@ -125,3 +125,5 @@ The repo is kept lightweight on purpose. The scripts are meant to be copied, run
 ---
 
 **→ Start with the one-line download or the quick start block above**
+
+> **Highlighted Usage Guide:** [Open docs/USAGE.md](docs/USAGE.md)
